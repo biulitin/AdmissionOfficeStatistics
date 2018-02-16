@@ -53,5 +53,19 @@ SELECT
   (SELECT count(*) FROM AbitSp, Speciality where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_id = SP.sp_id and isNULL(Speciality.sp_C,'') != '') and (AbitSp.z=1 or AbitSp.z_2014=4)) --зачислено
 FROM Speciality SP
   WHERE (isNULL(SP.sp_C,'') != '');
+  
+--8_Анкета_проход.балл
+
+SELECT 
+  SP.sp_Name, --специальность
+	KL.kl_name, --форма обучения
+
+  --проходной балл
+  (SELECT MIN((minb + ind_ball)) FROM AbitEGE, AbitSp WHERE AbitEGE.aid = AbitSp.aid AND AbitSp.sp_id = SP.sp_id AND AbitSp.f = 1 AND (AbitSp.z>0 OR (AbitSp.z_2014>0 AND AbitSp.z_2014<7))), --на бюджет
+  (SELECT MIN((minb + ind_ball)) FROM AbitEGE, AbitSp WHERE AbitEGE.aid = AbitSp.aid AND AbitSp.sp_id = SP.sp_id AND  AbitSp.f = 2 AND (AbitSp.z>0 OR AbitSp.z_2014=7)) --на коммерцию
+  FROM Speciality SP, KindLearn KL, PlanPr PP WHERE (
+		SP.sp_id = PP.sp_id 
+	AND KL.kl_id = PP.kl_id 
+	AND isNULL(SP.sp_C,'') = '');
 
 
