@@ -43,5 +43,15 @@ Select
 from Speciality SP, KindLearn KL, PlanPr PP where (
 		SP.sp_id = PP.sp_id 
 	and KL.kl_id = PP.kl_id 
-	and isNULL(SP.sp_C,'') = '')
+	and isNULL(SP.sp_C,'') = '');
+	
+--2_По целевым организациям
+SELECT 
+  SP.sp_Name, --специальность
+  SP.sp_C, --название организации
+  (SELECT COUNT(aid) FROM Speciality,  AbitSp WHERE (isNULL(Speciality.sp_C,'') != '') AND (AbitSp.sp_id = Speciality.sp_id) and (Speciality.sp_id = SP.sp_id)), --подано 
+  (SELECT count(*) FROM AbitSp, Speciality where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_id = SP.sp_id and isNULL(Speciality.sp_C,'') != '') and (AbitSp.z=1 or AbitSp.z_2014=4)) --зачислено
+FROM Speciality SP
+  WHERE (isNULL(SP.sp_C,'') != '');
+
 
