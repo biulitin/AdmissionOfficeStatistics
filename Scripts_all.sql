@@ -57,7 +57,7 @@ FROM Speciality SP
 --4_Анкета_по_приему
 SELECT 
   SP.sp_Name, --специальность
-	KL.kl_name, --форма обучения
+  KL.kl_name, --форма обучения
 --ПЛАН ПРИЕМА  
   Qo+F, --всего
   Qo, --на бюджет
@@ -78,12 +78,22 @@ SELECT
 		SP.sp_id = PP.sp_id 
 	AND KL.kl_id = PP.kl_id 
 	AND isNULL(SP.sp_C,'') = '');
+	
+
+--6_Анкеты_квоты
+SELECT 
+  SP.sp_Name, --специальность
+  KL.kl_name, --форма обучения
+  LG.fName, --категория квоты
+  (SELECT COUNT(*) FROM Abit, AbitSp WHERE AbitSp.sp_id = SP.sp_id AND AbitSp.kl_id = KL.kl_id AND Abit.l1_id = LG.fid AND Abit.aid = AbitSp.aid),--подано
+  (SELECT COUNT(*) FROM Abit, AbitSp WHERE AbitSp.sp_id = SP.sp_id AND AbitSp.kl_id = KL.kl_id AND Abit.l1_id = LG.fid AND Abit.aid = AbitSp.aid AND AbitSp.z_2014=4) --зачислено
+  FROM Speciality SP JOIN PlanPr PP ON SP.sp_id = PP.sp_id AND isNULL(SP.sp_C,'') = '' JOIN KindLearn KL ON PP.kl_id = KL.kl_id CROSS JOIN Lgot1 LG;
+
 
 --8_Анкета_проход.балл
 SELECT 
   SP.sp_Name, --специальность
-	KL.kl_name, --форма обучения
-
+  KL.kl_name, --форма обучения
   --проходной балл
   (SELECT MIN((minb + ind_ball)) FROM AbitEGE, AbitSp WHERE AbitEGE.aid = AbitSp.aid AND AbitSp.sp_id = SP.sp_id AND AbitSp.f = 1 AND (AbitSp.z>0 OR (AbitSp.z_2014>0 AND AbitSp.z_2014<7))), --на бюджет
   (SELECT MIN((minb + ind_ball)) FROM AbitEGE, AbitSp WHERE AbitEGE.aid = AbitSp.aid AND AbitSp.sp_id = SP.sp_id AND  AbitSp.f = 2 AND (AbitSp.z>0 OR AbitSp.z_2014=7)) --на коммерцию
