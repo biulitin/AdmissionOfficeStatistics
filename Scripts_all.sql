@@ -89,6 +89,23 @@ from Speciality SP, KindLearn KL, PlanPr PP where (
 order by SP.sp_Name, KL.kl_name;
 
 
+--5_Анкета_БВИ_олимп
+select
+	SP.sp_Name,		--специальность
+	KL.kl_name,		--форма обучения
+	AAI.ai_name,	--название олимпиады
+	E.ex_Name,		--экзамен (предмет)
+
+	(select count(*) from Speciality, AbitSp, AbitAddInfo where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.kl_id = KL.kl_id and AbitSp.aid = AbitAddInfo.aid and AbitAddInfo.ai_name = AAI.ai_name and exists (select * from AbitEGE where AbitSp.aid = AbitEGE.aid and AbitEGE.m100b > 0 and AbitEGE.ex_id = E.ex_id))),	--подано
+	(select count(*) from Speciality, AbitSp, AbitAddInfo where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.kl_id = KL.kl_id and AbitSp.aid = AbitAddInfo.aid and AbitAddInfo.ai_name = AAI.ai_name and exists (select * from AbitEGE where AbitSp.aid = AbitEGE.aid and AbitEGE.m100b > 0 and AbitEGE.ex_id = E.ex_id) and (AbitSp.z > 0 or AbitSp.z_2014 > 0))) --зачислено
+
+from Speciality SP, KindLearn KL, 
+	(select distinct AbitAddInfo.ai_name from AbitAddInfo) as AAI, Exam E where 
+		isNULL(SP.sp_C,'') = ''
+	and E.ex_Name not like 'Русский%'
+	and exists (select * from AbitSp, AbitAddInfo where AbitSp.sp_id = SP.sp_id and AbitSp.kl_id = KL.kl_id and AbitSp.aid = AbitAddInfo.aid and AbitAddInfo.ai_name = AAI.ai_name)
+order by SP.sp_Name, KL.kl_name, AAI.ai_name, E.ex_Name;
+
 --6_Анкеты_квоты
 select 
 	SP.sp_Name,	--специальность
