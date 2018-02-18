@@ -2,7 +2,7 @@
 /*---------------------------------------------*/
 
 --1_Обобщенная по приему
-Select 
+select 
 	SP.sp_Name, --специальность
 	KL.kl_name, --форма обучения
 	
@@ -27,7 +27,7 @@ Select
 	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and isNULL(Speciality.sp_C,'') != '') and (AbitSp.z=1 or AbitSp.z_2014=4)), --по целевым зачислено
 	(select count(*) from AbitSp, Abit where (Abit.aid = AbitSp.aid and AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = SP.sp_id and AbitSp.f = 1 and Abit.l1_id>0) and (AbitSp.z=1 or AbitSp.z_2014=4)), --квотники зачислено
 	(select count(*) from AbitSp, Abit where (Abit.aid = AbitSp.aid and AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = SP.sp_id and AbitSp.f = 1 and Abit.l_id>0) and (AbitSp.z=1 or AbitSp.z_2014=4)), --БВИ зачислено
-	0, --Вне конкурса подано
+	0, --Вне конкурса зачислено
 	(select count(*) from AbitSp, Abit where (Abit.aid = AbitSp.aid and AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = SP.sp_id and Abit.l2_id>0) and (AbitSp.z>0 or AbitSp.z_2014>0)), --с преимуществом зачислено
 	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and not exists(select * from AbitEGE where (AbitSp.aid = AbitEGE.aid and (AbitEGE.d_ex is not null or AbitEGE.gr is not null))) and (AbitSp.z>0 or AbitSp.z_2014>0))), --по ЕГЭ зачислено
 	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and exists(select * from AbitEGE where (AbitSp.aid = AbitEGE.aid and (AbitEGE.d_ex is not null or AbitEGE.gr is not null))) and (AbitSp.z>0 or AbitSp.z_2014>0))), --по экз. ВУЗа зачислено
@@ -38,68 +38,85 @@ Select
 	PP.Qo + PP.F, --ПП всего
 	PP.Qo, --ПП бюджет
 	PP.F, --ПП по договорам
-	(select sum(Qo) from PlanPr, Speciality where (PlanPr.kl_id = KL.kl_id and PlanPr.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and isNULL(Speciality.sp_C,'') != ''))
+	(select isNULL(sum(Qo), 0) from PlanPr, Speciality where (PlanPr.kl_id = KL.kl_id and PlanPr.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and isNULL(Speciality.sp_C,'') != '')) --ПП поцелевым местам
 
 from Speciality SP, KindLearn KL, PlanPr PP where (
 		SP.sp_id = PP.sp_id 
 	and KL.kl_id = PP.kl_id 
-	and isNULL(SP.sp_C,'') = '');
-	
+	and isNULL(SP.sp_C,'') = '')
+order by SP.sp_Name, KL.kl_name;
+
+
 --2_По целевым организациям
-SELECT 
-  SP.sp_Name, --специальность
-  SP.sp_C, --название организации
-  (SELECT COUNT(aid) FROM Speciality,  AbitSp WHERE (isNULL(Speciality.sp_C,'') != '') AND (AbitSp.sp_id = Speciality.sp_id) and (Speciality.sp_id = SP.sp_id)), --подано 
-  (SELECT count(*) FROM AbitSp, Speciality where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_id = SP.sp_id and isNULL(Speciality.sp_C,'') != '') and (AbitSp.z=1 or AbitSp.z_2014=4)) --зачислено
-FROM Speciality SP
-  WHERE (isNULL(SP.sp_C,'') != '');
-  
+select 
+	SP.sp_Name,	--специальность
+	SP.sp_C,	--название организации
+	(select count(*) from AbitSp where AbitSp.sp_id = SP.sp_id), --подано 
+	(select count(*) FROM AbitSp where (AbitSp.sp_id = SP.sp_id) and (AbitSp.z=1 or AbitSp.z_2014=4)) --зачислено
+from Speciality SP, PlanPr PP where (
+		SP.sp_id = PP.sp_id 
+	and isNULL(SP.sp_C,'') != '')
+order by SP.sp_Name, SP.sp_C;
+
+
 --4_Анкета_по_приему
-SELECT 
-  SP.sp_Name, --специальность
-  KL.kl_name, --форма обучения
---ПЛАН ПРИЕМА  
-  Qo+F, --всего
-  Qo, --на бюджет
-  F, --по договорам
-  (select sum(Qo) from PlanPr, Speciality where (PlanPr.kl_id = KL.kl_id and PlanPr.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and isNULL(Speciality.sp_C,'') != '')), --по целевым местам
---ПОДАНО
+select 
+	SP.sp_Name, --специальность
+	KL.kl_name, --форма обучения
+
+	--ПЛАН ПРИЕМА
+	PP.Qo + PP.F, --ПП всего
+	PP.Qo, --ПП бюджет
+	(select isNULL(sum(Qo), 0) from PlanPr, Speciality where (PlanPr.kl_id = KL.kl_id and PlanPr.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and isNULL(Speciality.sp_C,'') != '')), --ПП поцелевым местам
+	PP.F, --ПП по договорам
+
+	--ПОДАНО
 	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name)), --всего подано
-  (select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.f = 1)), --на бюджет подано 
-  (select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and isNULL(Speciality.sp_C,'') != '')), --по целевым подано
+	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.f = 1)), --на бюджет подано
+	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and isNULL(Speciality.sp_C,'') != '')), --по целевым подано
 	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.f = 2)), --по договорам подано
 
---ЗАЧИСЛЕНО
-  (select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and (AbitSp.z>0 or AbitSp.z_2014>0))), --всего зачислено
-  (select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.f = 1 and (AbitSp.z>0 or (AbitSp.z_2014>0 and AbitSp.z_2014<7)))), --на бюджет зачислено
- (select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and isNULL(Speciality.sp_C,'') != '') and (AbitSp.z=1 or AbitSp.z_2014=4)), --по целевым зачислено
-  	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.f = 2 and (AbitSp.z>0 or AbitSp.z_2014=7))) --по договорам зачислено
- FROM Speciality SP, KindLearn KL, PlanPr PP WHERE (
+	--ЗАЧИСЛЕНО
+	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and (AbitSp.z>0 or AbitSp.z_2014>0))), --всего зачислено
+	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.f = 1 and (AbitSp.z>0 or (AbitSp.z_2014>0 and AbitSp.z_2014<7)))), --на бюджет зачислено
+	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and isNULL(Speciality.sp_C,'') != '') and (AbitSp.z=1 or AbitSp.z_2014=4)), --по целевым зачислено
+	(select count(*) from AbitSp, Speciality where (AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.f = 2 and (AbitSp.z>0 or AbitSp.z_2014=7))) --по договорам зачислено
+
+from Speciality SP, KindLearn KL, PlanPr PP where (
 		SP.sp_id = PP.sp_id 
-	AND KL.kl_id = PP.kl_id 
-	AND isNULL(SP.sp_C,'') = '');
-	
+	and KL.kl_id = PP.kl_id 
+	and isNULL(SP.sp_C,'') = '')
+order by SP.sp_Name, KL.kl_name;
+
 
 --6_Анкеты_квоты
-SELECT 
-  SP.sp_Name, --специальность
-  KL.kl_name, --форма обучения
-  LG.fName, --категория квоты
-  (SELECT COUNT(*) FROM Abit, AbitSp WHERE AbitSp.sp_id = SP.sp_id AND AbitSp.kl_id = KL.kl_id AND Abit.l1_id = LG.fid AND Abit.aid = AbitSp.aid),--подано
-  (SELECT COUNT(*) FROM Abit, AbitSp WHERE AbitSp.sp_id = SP.sp_id AND AbitSp.kl_id = KL.kl_id AND Abit.l1_id = LG.fid AND Abit.aid = AbitSp.aid AND AbitSp.z_2014=4) --зачислено
-  FROM Speciality SP JOIN PlanPr PP ON SP.sp_id = PP.sp_id AND isNULL(SP.sp_C,'') = '' JOIN KindLearn KL ON PP.kl_id = KL.kl_id CROSS JOIN Lgot1 LG;
+select 
+	SP.sp_Name,	--специальность
+	KL.kl_name,	--форма обучения
+	LG.fName,		--категория квоты
+	(select count(*) from Abit, AbitSp where (Abit.aid = AbitSp.aid and AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = SP.sp_id and Abit.l1_id = LG.fid)), --подано
+	(select count(*) from Abit, AbitSp where (Abit.aid = AbitSp.aid and AbitSp.kl_id = KL.kl_id and AbitSp.sp_id = SP.sp_id and Abit.l1_id = LG.fid) and (AbitSp.z=1 or AbitSp.z_2014=4)) --зачислено
+
+from Speciality SP, KindLearn KL, PlanPr PP, Lgot1 LG where (
+		SP.sp_id = PP.sp_id 
+	and KL.kl_id = PP.kl_id 
+	and isNULL(SP.sp_C,'') = '')
+order by SP.sp_Name, KL.kl_name, LG.fName;
 
 
 --8_Анкета_проход.балл
 SELECT 
-  SP.sp_Name, --специальность
-  KL.kl_name, --форма обучения
-  --проходной балл
-  (SELECT MIN((minb + ind_ball)) FROM AbitEGE, AbitSp WHERE AbitEGE.aid = AbitSp.aid AND AbitSp.sp_id = SP.sp_id AND AbitSp.f = 1 AND (AbitSp.z>0 OR (AbitSp.z_2014>0 AND AbitSp.z_2014<7))), --на бюджет
-  (SELECT MIN((minb + ind_ball)) FROM AbitEGE, AbitSp WHERE AbitEGE.aid = AbitSp.aid AND AbitSp.sp_id = SP.sp_id AND  AbitSp.f = 2 AND (AbitSp.z>0 OR AbitSp.z_2014=7)) --на коммерцию
-  FROM Speciality SP, KindLearn KL, PlanPr PP WHERE (
+	SP.sp_Name, --специальность
+	KL.kl_name, --форма обучения
+
+	--проходной балл
+	(select isNULL(min((minb + ind_ball)), 0) from Speciality, AbitSp where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.f = 1 AND (AbitSp.z>0 OR (AbitSp.z_2014>0 AND AbitSp.z_2014<7)))), --на бюджет
+	(select isNULL(min((minb + ind_ball)), 0) from Speciality, AbitSp where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and AbitSp.f = 2 AND (AbitSp.z>0 OR AbitSp.z_2014=7))) --на коммерцию
+
+from Speciality SP, KindLearn KL, PlanPr PP where (
 		SP.sp_id = PP.sp_id 
-	AND KL.kl_id = PP.kl_id 
-	AND isNULL(SP.sp_C,'') = '');
+	and KL.kl_id = PP.kl_id 
+	and isNULL(SP.sp_C,'') = '')
+order by SP.sp_Name, KL.kl_name;
 
 
