@@ -121,6 +121,63 @@ from Speciality SP, KindLearn KL, PlanPr PP, Lgot1 LG where (
 order by SP.sp_Name, KL.kl_name, LG.fName;
 
 
+--7_Анкета_целевики
+select
+	SP.sp_Name,
+	Region,
+
+	(select isNULL(sum(Qo), 0) from PlanPr, Speciality where (PlanPr.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and Speciality.sp_C like 
+	case
+		when Region like '%область%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%Чуваш%' then '%Чувашск%'
+		when Region like '%абардин%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%арачаев%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%еспублика%' then '%' + SUBSTRING(Region, CHARINDEX(' ', Region) + 1, LEN(Region))+ '%'
+	end
+	)), --план приема
+	(select count(*) from AbitSp, Speciality where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and Speciality.sp_C like 
+	case
+		when Region like '%область%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%Чуваш%' then '%Чувашск%'
+		when Region like '%абардин%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%арачаев%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%еспублика%' then '%' + SUBSTRING(Region, CHARINDEX(' ', Region) + 1, LEN(Region))+ '%'
+	end
+	)), --подано
+	(select count(*) from AbitSp, Speciality where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and Speciality.sp_C like 
+	case
+		when Region like '%область%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%Чуваш%' then '%Чувашск%'
+		when Region like '%абардин%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%арачаев%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%еспублика%' then '%' + SUBSTRING(Region, CHARINDEX(' ', Region) + 1, LEN(Region))+ '%'
+	end
+	) and (AbitSp.z = 1 or AbitSp.z_2014 = 4)), --зачислено
+	(select isNULL(min((minb + ind_ball)), 0) from AbitSp, Speciality where (AbitSp.sp_id = Speciality.sp_id and Speciality.sp_Name = SP.sp_Name and Speciality.sp_C like 
+	case
+		when Region like '%область%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%Чуваш%' then '%Чувашск%'
+		when Region like '%абардин%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%арачаев%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%еспублика%' then '%' + SUBSTRING(Region, CHARINDEX(' ', Region) + 1, LEN(Region))+ '%'
+	end
+	) and (AbitSp.z = 1 or AbitSp.z_2014 = 4)) --проходной балл
+
+from Speciality SP, (select distinct Region from Abit) as R where (
+		isNULL(SP.sp_C,'') = ''
+	and R.Region not in ('нет', '')
+	and exists (select * from Speciality, PlanPr where (Speciality.sp_id = PlanPr.sp_id and Speciality.sp_Name = SP.sp_Name and Speciality.sp_C like 
+	case
+		when Region like '%область%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%Чуваш%' then '%Чувашск%'
+		when Region like '%абардин%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%арачаев%' then '%' + SUBSTRING(Region, 1, CHARINDEX(' ', Region) - 3)+ '%'
+		when Region like '%еспублика%' then '%' + SUBSTRING(Region, CHARINDEX(' ', Region) + 1, LEN(Region))+ '%'
+	end
+	)))
+order by SP.sp_Name, R.Region;
+
+
 --8_Анкета_проход.балл
 SELECT 
 	SP.sp_Name, --специальность
