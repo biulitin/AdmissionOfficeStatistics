@@ -271,3 +271,28 @@ SELECT
 		SP.sp_id = PP.sp_id  
 	AND KL.kl_id = PP.kl_id 
 	AND isNULL(SP.sp_C,'') = '');
+--1.2
+SELECT 
+  SP.sp_Name, --специальность
+  KL.kl_name, --форма обучения
+  --БЮДЖЕТ 
+  (SELECT COUNT(*) FROM Speciality, AbitSp WHERE Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=1 AND AbitSp.d_data<='26.07.2017 0:00:00.000'), --всего
+  (SELECT COUNT(DISTINCT(AbitSp.aid)) FROM Speciality, AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=1 AND AbitSp.d_data<='26.07.2017 0:00:00.000' AND l_id>0), --без вступительных испытаний
+  (SELECT COUNT(DISTINCT(AbitSp.aid)) FROM Speciality, AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=1 AND AbitSp.d_data<='26.07.2017 0:00:00.000' AND l1_id>0), --по особой квоте
+  (SELECT COUNT(DISTINCT(AbitSp.aid)) FROM Speciality, AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=1 AND AbitSp.d_data<='26.07.2017 0:00:00.000' AND isNULL(SP.sp_C,'') != ''), --по целевой квоте
+   
+  (SELECT COUNT(*) FROM Speciality, AbitSp WHERE Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=1 AND AbitSp.d_data<='26.07.2017 0:00:00.000')-
+  (SELECT COUNT(DISTINCT(AbitSp.aid)) FROM Speciality, AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=1 AND AbitSp.d_data<='26.07.2017 0:00:00.000' AND l_id>0)-
+  (SELECT COUNT(DISTINCT(AbitSp.aid)) FROM Speciality, AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=1 AND AbitSp.d_data<='26.07.2017 0:00:00.000' AND l1_id>0)-
+  (SELECT COUNT(DISTINCT(AbitSp.aid)) FROM Speciality, AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=1 AND AbitSp.d_data<='26.07.2017 0:00:00.000' AND isNULL(SP.sp_C,'') != ''), --на общий конкурс
+ 
+  (SELECT COUNT(*) FROM Speciality, AbitSp WHERE Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=1 AND AbitSp.d_data>'26.07.2017 0:00:00.000'), --начиная с 27.07.2017
+
+ --КОММЕРЦИЯ
+  (SELECT COUNT(DISTINCT(AbitSp.aid)) FROM Speciality, AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=2 AND AbitSp.d_data<='26.07.2017 0:00:00.000'), --всего
+  (SELECT COUNT(DISTINCT(AbitSp.aid)) FROM Speciality, AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=2 AND AbitSp.d_data<='26.07.2017 0:00:00.000'), --на общий конкурс
+  (SELECT COUNT(DISTINCT(AbitSp.aid)) FROM Speciality, AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND Speciality.sp_id = AbitSp.sp_id AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_Name = SP.sp_Name AND f=2 AND AbitSp.d_data>'26.07.2017 0:00:00.000') --начиная с 27.07.2017
+   FROM Speciality SP, KindLearn KL, PlanPr PP WHERE (
+		SP.sp_id = PP.sp_id  
+	AND KL.kl_id = PP.kl_id 
+	AND isNULL(SP.sp_C,'') = '');
