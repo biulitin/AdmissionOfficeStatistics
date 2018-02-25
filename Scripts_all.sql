@@ -259,13 +259,13 @@ SELECT
   SP.sp_Name, --специальность
   KL.kl_name, --форма обучения
   --БЮДЖЕТ
-  (SELECT Qo FROM PlanPr WHERE SP.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id),--всего
-  (SELECT Lg FROM PlanPr WHERE SP.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id),--особая квота
+  (SELECT SUM(Qo) FROM PlanPr, Speciality WHERE SP.sp_Name = Speciality.sp_Name AND Speciality.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id),--всего
+  (SELECT SUM(Lg) FROM PlanPr,Speciality WHERE SP.sp_Name = Speciality.sp_Name AND Speciality.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id),--особая квота
   (SELECT SUM(Qo) FROM PlanPr, Speciality WHERE KL.kl_id = PlanPr.kl_id AND PlanPr.sp_id = Speciality.sp_id AND isNULL(Speciality.sp_C,'') != '' AND Speciality.sp_Name = SP.sp_Name AND KL.kl_id = PlanPr.kl_id),--целевая квота
-  (SELECT Qo FROM PlanPr WHERE SP.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id) - (SELECT Lg FROM PlanPr WHERE SP.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id) - (SELECT SUM(Qo) FROM PlanPr, Speciality WHERE PlanPr.sp_id = Speciality.sp_id AND KL.kl_id = PlanPr.kl_id AND isNULL(Speciality.sp_C,'') != '' AND Speciality.sp_Name = SP.sp_Name AND KL.kl_id = PlanPr.kl_id),--по общему конкурсу
+  (SELECT SUM(Qo) FROM PlanPr,Speciality WHERE SP.sp_Name = Speciality.sp_Name AND Speciality.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id) - (SELECT SUM(Lg) FROM PlanPr, Speciality WHERE SP.sp_Name = Speciality.sp_Name AND Speciality.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id) - (SELECT SUM(Qo) FROM PlanPr, Speciality WHERE PlanPr.sp_id = Speciality.sp_id AND KL.kl_id = PlanPr.kl_id AND isNULL(Speciality.sp_C,'') != '' AND Speciality.sp_Name = SP.sp_Name AND KL.kl_id = PlanPr.kl_id),--по общему конкурсу
   --КОММЕРЦИЯ
-  (SELECT F FROM PlanPr WHERE SP.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id),--всего
-  (SELECT F FROM PlanPr WHERE SP.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id)--по общему конкурсу
+  (SELECT SUM(F) FROM PlanPr, Speciality WHERE SP.sp_Name = Speciality.sp_Name AND Speciality.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id),--всего
+  (SELECT SUM(F) FROM PlanPr, Speciality WHERE SP.sp_Name = Speciality.sp_Name AND Speciality.sp_id = PlanPr.sp_id AND KL.kl_id = PlanPr.kl_id)--по общему конкурсу
 
    FROM Speciality SP, KindLearn KL, PlanPr PP WHERE (
 		SP.sp_id = PP.sp_id  
