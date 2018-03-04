@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Формирование статистики</title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<!--necessary tabs-->
+		<div class="tab">
+  			<button class="tablinks" onclick="openTab(event, 'internal')">Внутренняя статистика</button>
+  			<button class="tablinks" onclick="openTab(event, 'gzgu')">Статистика ГЗГУ</button>
+  			<button class="tablinks" onclick="openTab(event, 'list')">Статистика по спискам</button>
+  			<button class="tablinks" onclick="openTab(event, 'set')">Наборная статистика</button>
+		</div>
+
+		<!-- each tab content -->
+		<div id="internal" class="tabcontent">
+			<fieldset>
+				<legend>Доступные элементы статистики</legend>
+				<input type="checkbox" name="general">1. Обобщенная по приему<br>
+				<input type="checkbox" name="celevoi">2. По целевым организациям<br>
+				<input type="checkbox" name="general+">3. Обобщенная по приему(+по уч.заведениям)<br>
+				<input type="checkbox" name="ank_priem">4. Анкета по приему<br>
+				<input type="checkbox" name="ank_bvi">5. Анкета по БВИ и олимпиадам<br>
+				<input type="checkbox" name="ank_kvota">6. Анкета по квотам<br>
+				<input type="checkbox" name="ank_celevoi">7. Анкета по целевикам<br>
+				<input type="checkbox" name="ank_ball">8. Анкета по проходным баллам<br>
+			</fieldset>
+			<button class="genBtn" onclick="genBtnClick('internal')">Сгенерировать</button>
+		</div>
+
+		<div id="gzgu" class="tabcontent">
+			<fieldset>
+				<legend>Доступные элементы статистики</legend>
+				<input type="checkbox" name="1.1">Раздел 1.1 - План приема<br>
+				<input type="checkbox" name="1.2">Раздел 1.2 - Подано заявлений<br>
+				<input type="checkbox" name="1.3">Раздел 1.3 - Зачислено(по волнам)<br>
+				<input type="checkbox" name="1.4">Раздел 1.4 - Зачислено(по категориям)<br>
+			</fieldset>
+			<button class="genBtn" onclick="genBtnClick('gzgu')">Сгенерировать</button>
+		</div>
+
+		<div id="list" class="tabcontent">
+			<fieldset>
+				<legend>Доступные категории расчета статистики</legend>
+				<input type="checkbox" name="nobvi">Без Вступительных Испытаний(БВИ)<br>
+				<input type="checkbox" name="kvota">Квота приема<br>
+				<input type="checkbox" name="celevoi">Целевой прием<br>
+				<input type="checkbox" name="budget1">Бюджет(1-ая волна)<br>
+				<input type="checkbox" name="budget2">Бюджет(2-ая волна)<br>
+				<input type="checkbox" name="dogovor">По договорам<br>
+				<input type="checkbox" name="vse">Все<br>
+			</fieldset>
+			<button class="genBtn" onclick="genBtnClick('list')">Сгенерировать</button>
+		</div>
+
+		<div id="set" class="tabcontent">
+			<table width="100%">
+				<tr>
+    				<td valign="top">
+    					<fieldset id="exampleFieldSet">
+							<legend>Доступные категории расчета статистики</legend>
+							<input type="checkbox" name="bvi">Без Вступительных Испытаний(БВИ)<br>
+							<input type="checkbox" name="kvota">Квота приема<br>
+							<input type="checkbox" name="celevoi">Целевой прием<br>
+							<input type="checkbox" name="budget1">Бюджет(1-ая волна)<br>
+							<input type="checkbox" name="budget2">Бюджет(2-ая волна)<br>
+							<input type="checkbox" name="dogovor">По договорам<br>
+							<input type="checkbox" name="vse1">Все<br>
+						</fieldset>
+					</td>
+    				<td valign="top">
+    					<fieldset>
+							<legend>Отображаемые показатели</legend>
+							<input type="checkbox" name="compet_ball">Конкурсный балл<br>
+							<input type="checkbox" name="general_ege">Общий балл за ЕГЭ<br>
+							<input type="checkbox" name="parts_ege">Баллы ЕГЭ по отдельным предметам<br>
+							<input type="checkbox" name="general_id">Общий балл за ИД<br>
+							<input type="checkbox" name="parts_id">Баллы за отдельные ИД<br>
+							<input type="checkbox" name="vse2">Все<br>
+						</fieldset>
+    				</td>
+  				</tr>
+  				<tr>
+    				<td colspan="2">
+    					<fieldset>
+							<legend>Дополнительные параметры</legend>
+							<input type="checkbox" name="otdel_id">Отображать только метки наличия отдельных ИД<br>
+							<input type="checkbox" name="inbetween">Подсчитать промежуточные итоговые показатели<br>
+							<input type="checkbox" name="colored">Разделение цветом сдавших ЕГЭ/ВИ<br>
+						</fieldset>
+    				</td>
+  				</tr>
+  				<tr>
+  					<td colspan="2">
+  						<button class="genBtn" onclick="genBtnClick('set')">Сгенерировать</button>
+  					</td>
+  				</tr>
+			</table>
+		</div>
+		<script type="text/javascript" src="script.js"></script>
+	</body>
+</html>
