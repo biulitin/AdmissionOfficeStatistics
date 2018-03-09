@@ -296,6 +296,31 @@ SELECT
 		SP.sp_id = PP.sp_id  
 	AND KL.kl_id = PP.kl_id 
 	AND isNULL(SP.sp_C,'') = '');
+--1.3
+SELECT 
+  SP.sp_Name, --специальность
+  KL.kl_name, --форма обучения
+  --БЮДЖЕТ 
+  (SELECT COUNT(*) FROM AbitSp, Speciality WHERE KL.kl_id = AbitSp.kl_id AND AbitSp.sp_id = Speciality.sp_id AND SP.sp_Name = Speciality.sp_Name AND AbitSp.f = 1 AND (AbitSp.z>0 OR (AbitSp.z_2014>0 AND AbitSp.z_2014<7))), --всего
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit, Lgot WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND SP.sp_id = AbitSp.sp_id AND AbitSp.f = 1 AND Abit.l_id > 0 AND Lgot.fid = Abit.l_id AND Lgot.fName LIKE '%Всерос%' AND (z=1 OR z_2014=4)), --всерос
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit, Lgot WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND SP.sp_id = AbitSp.sp_id AND AbitSp.f = 1 AND Abit.l_id > 0 AND Lgot.fid = Abit.l_id AND Lgot.fName LIKE '%всеукр%' AND (z=1 OR z_2014=4)), --всеукр
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit, Lgot WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND SP.sp_id = AbitSp.sp_id AND AbitSp.f = 1 AND Abit.l_id > 0 AND Lgot.fid = Abit.l_id AND (Lgot.fName NOT LIKE '%Всерос%' AND  Lgot.fName NOT LIKE '%всеурк%' AND Lgot.fName NOT LIKE '%олимп* игр%') AND (z=1 OR z_2014=4)), --1-3 уровни
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit, Lgot WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND SP.sp_id = AbitSp.sp_id AND AbitSp.f = 1 AND Abit.l_id > 0 AND Lgot.fid = Abit.l_id AND Lgot.fName LIKE '%олимп* игр%' AND (z=1 OR z_2014=4)), -- вообще хз, как должно работать, потому что в Lgot нет олимпийских игр
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit, Lgot WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND SP.sp_id = AbitSp.sp_id AND AbitSp.f = 1 AND Abit.l1_id > 0 AND (z=1 OR z_2014=4)), --особая квота
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit, Lgot, Speciality WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND Speciality.sp_id = AbitSp.sp_id AND SP.sp_Name = Speciality.sp_Name AND isNULL(Speciality.sp_C,'') = '' AND (z=1 OR z_2014=4)), --целевая квота, всего
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND AbitSp.sp_id = SP.sp_id  AND AbitSp.f = 1 AND (Abit.l_id = 0 OR Abit.l_id IS NULL) AND (Abit.l1_id = 0 OR Abit.l1_id IS NULL) AND (AbitSp.z>0 OR (AbitSp.z_2014>0 AND AbitSp.z_2014<7))), --по общему конкурсу
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND AbitSp.sp_id = SP.sp_id AND f=1 AND (Abit.l_id = 0 OR Abit.l_id IS NULL) AND (Abit.l1_id = 0 OR Abit.l1_id IS NULL) AND (AbitSp.z>0 OR (AbitSp.z_2014>0 AND AbitSp.z_2014<7)) AND NOT EXISTS(SELECT * FROM AbitEGE WHERE AbitSp.aid = AbitEGE.aid AND AbitEGE.m100b > 0)), -- не 100бальники
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit WHERE Abit.aid=AbitSp.aid AND KL.kl_id=AbitSp.kl_id AND AbitSp.sp_id = SP.sp_id AND f=1 AND (Abit.l_id = 0 OR Abit.l_id IS NULL) AND (Abit.l1_id = 0 OR Abit.l1_id IS NULL) AND (AbitSp.z>0 OR (AbitSp.z_2014>0 AND AbitSp.z_2014<7)) AND EXISTS(SELECT * FROM AbitEGE WHERE AbitSp.aid = AbitEGE.aid AND AbitEGE.m100b > 0)), -- 100бальники
+ --КОММЕРЦИЯ
+  (SELECT COUNT(*) FROM AbitSp, Speciality WHERE KL.kl_id = AbitSp.kl_id AND AbitSp.sp_id = Speciality.sp_id AND SP.sp_Name = Speciality.sp_Name AND AbitSp.f = 2 AND (AbitSp.z>0 or AbitSp.z_2014=7)), --всего
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND AbitSp.sp_id = SP.sp_id  AND AbitSp.f = 2 AND (Abit.l_id = 0 OR Abit.l_id IS NULL) AND (Abit.l1_id = 0 OR Abit.l1_id IS NULL) AND (AbitSp.z>0 or AbitSp.z_2014=7)), --по общему конкурсу
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit WHERE Abit.aid = AbitSp.aid AND KL.kl_id = AbitSp.kl_id AND AbitSp.sp_id = SP.sp_id AND f=2 AND (Abit.l_id = 0 OR Abit.l_id IS NULL) AND (Abit.l1_id = 0 OR Abit.l1_id IS NULL) AND (AbitSp.z>0 or AbitSp.z_2014=7) AND NOT EXISTS(SELECT * FROM AbitEGE WHERE AbitSp.aid = AbitEGE.aid AND AbitEGE.m100b > 0)), -- не 100бальники
+  (SELECT COUNT(DISTINCT(Abit.aid)) FROM AbitSp, Abit WHERE Abit.aid=AbitSp.aid AND KL.kl_id=AbitSp.kl_id AND AbitSp.sp_id = SP.sp_id AND f=2 AND (Abit.l_id = 0 OR Abit.l_id IS NULL) AND (Abit.l1_id = 0 OR Abit.l1_id IS NULL) AND (AbitSp.z>0 or AbitSp.z_2014=7) AND EXISTS(SELECT * FROM AbitEGE WHERE AbitSp.aid = AbitEGE.aid AND AbitEGE.m100b > 0)) -- 100бальники
+
+ FROM Speciality SP, KindLearn KL, PlanPr PP WHERE (
+		SP.sp_id = PP.sp_id  
+	AND KL.kl_id = PP.kl_id 
+	AND isNULL(SP.sp_C,'') = '');
 	
 --1.4
 sELECT 
