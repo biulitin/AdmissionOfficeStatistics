@@ -1,6 +1,7 @@
 package medacademy;
 
 import medacademy.controller.Bridge;
+import medacademy.model.DBSingleton;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -11,6 +12,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
+
+import javax.xml.transform.Result;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 public class MedAcademy extends Application {
 
@@ -52,6 +58,16 @@ public class MedAcademy extends Application {
     }
 
     public static void main(String[] args) {
+        //sample of executing sql data
+        /*try {
+            ResultSet set = DBSingleton.executeStatement("select * from Abit");
+            while (set.next()) {
+                System.out.println(set.getString(1));
+            }
+        }catch(Exception e) {
+            e.printStackTrace();
+        }*/
+
         launch(args);
     }
 }
