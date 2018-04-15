@@ -3,6 +3,8 @@ package medacademy.model;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -101,6 +103,8 @@ public class ExcelBuilder {
     public void fulfillSheet(XSSFSheet sheet, ResultSet set) throws Exception{
         ResultSetMetaData meta = set.getMetaData();
         int start = 0;
+        int lY = -1;
+        int fY = -1;
         MyCell lastCell = null;
         while(set.next()){
             for(int i = 0; i<meta.getColumnCount(); i++){
@@ -109,8 +113,14 @@ public class ExcelBuilder {
                     continue;
                 String cellText = set.getString(i+1);
                 lastCell = new MyCell(colName, start).insert(sheet, cellText);
+                if ((lY == -1) || (lY < lastCell.y2))
+                    lY = lastCell.y2;
+                if ((fY == -1) || (fY > lastCell.y1))
+                    fY = lastCell.y1;
             }
-            start = lastCell.y2;
+            start += lY - fY + 1;
+            lY = -1;
+            fY = -1;
         }
     }
 
@@ -120,11 +130,32 @@ public class ExcelBuilder {
         WhereIsIt whereisit = new WhereIsIt(name, sheets);
         File file = new File(this.getClass().getClassLoader().getResource("").getPath()+"medacademy\\model\\excels\\"+whereisit.excelName);
         XSSFWorkbook book = new XSSFWorkbook(file);
+        XSSFWorkbook newBook = new XSSFWorkbook();
         for(int i = 0; i<whereisit.sheetName.size(); i++){
             XSSFSheet sheet = book.getSheet(whereisit.sheetName.get(i));
             ResultSet set = DBSingleton.executeStatement(whereisit.sql.get(i));
+            deleteUnnecessarySheets(whereisit.sheetName, book);
             fulfillSheet(sheet, set);
         }
-        book.write(new FileOutputStream(file+"1.xlsx"));
+        book.write(new FileOutputStream(file.getName().substring(0, file.getName().length() - 12)+".xlsx"));
+        file = new File(file.getName().substring(0, file.getName().length() - 12)+".xlsx");
+        Desktop.getDesktop().open(file);
+    }
+
+    public void deleteUnnecessarySheets(ArrayList<String> sheets, XSSFWorkbook book){
+        int sheetsNumber = book.getNumberOfSheets();
+        ArrayList<Integer> removeArr = new ArrayList<Integer>();
+        for(int i = 0; i<sheetsNumber; i++){
+            if(sheets.contains(book.getSheetName(i)))
+                continue;
+            else
+                removeArr.add(i);
+        }
+
+        for(int i = 0; i<removeArr.size(); i++){
+            book.removeSheetAt(removeArr.get(i));
+            for(int j = i+1; j<removeArr.size(); j++)
+                removeArr.set(j, removeArr.get(j)-1);
+        }
     }
 }
