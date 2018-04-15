@@ -1,29 +1,44 @@
 package medacademy.controller;
 
+import medacademy.model.ExcelBuilder;
 import netscape.javascript.JSObject;
 
+import java.util.ArrayList;
+
 public class Bridge {
+
+    ExcelBuilder builder = new ExcelBuilder();
+
+    String[] internal = {"general", "celevoi", "general+", "ank_priem", "ank_bvi", "ank_kvota", "ank_celevoi", "ank_ball"};
+    String[] gzgu = {"1.1", "1.2", "1.3", "1.4"};
+
     public void startStatGenerator(JSObject input) {
         String tab = (String) input.getMember("tabName");
-
-        switch(tab){
+        System.out.println(tab);
+        ArrayList<String> sheets = new ArrayList<String>();
+        switch(tab) {
             case "internal":
-                System.out.println("internal");
-                System.out.println("general"  + " " +input.getMember("general"));
-                System.out.println("celevoi"  + " " +input.getMember("celevoi"));
-                System.out.println("general+"  + " " +input.getMember("general+"));
-                System.out.println("ank_priem"  + " " +input.getMember("ank_priem"));
-                System.out.println("ank_bvi"  + " " +input.getMember("ank_bvi"));
-                System.out.println("ank_kvota"  + " " +input.getMember("ank_kvota"));
-                System.out.println("ank_celecoi"  + " " +input.getMember("ank_celevoi"));
-                System.out.println("ank_ball"  + " " +input.getMember("ank_ball"));
+                for (String sheet : internal)
+                    if (((Boolean) input.getMember(sheet)) == true)
+                        sheets.add(sheet);
+
+                try {
+                    builder.startBuildExcel(tab, sheets);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
                 break;
             case "gzgu":
-                System.out.println("gzgu");
-                System.out.println("1.1" + " " + input.getMember("1.1"));
-                System.out.println("1.2" + " " + input.getMember("1.2"));
-                System.out.println("1.3" + " " + input.getMember("1.3"));
-                System.out.println("1.4" + " " + input.getMember("1.4"));
+                for (String sheet : gzgu)
+                    if (((Boolean) input.getMember(sheet)) == true)
+                        sheets.add(sheet);
+
+                try {
+                    builder.startBuildExcel(tab, sheets);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             case "list":
                 System.out.println("list");
